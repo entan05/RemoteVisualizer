@@ -5,8 +5,9 @@ import android.os.HandlerThread;
 import android.support.annotation.NonNull;
 import android.text.TextUtils;
 
+import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.net.Socket;
 
 public class TcpConnecter {
@@ -51,24 +52,11 @@ public class TcpConnecter {
                 try {
                     mSocket = new Socket(mIpAddress, mPort);
 
-                    InputStream inputStream = mSocket.getInputStream();
-
                     String message;
-                    do {
-                        byte[] buffer = new byte[10240];
-                        int n = 0;
-                        int c;
-                        while (n < buffer.length && mSocket.isConnected() && (c = inputStream.read()) != -1) {
-                            if (c == 0x0A) {
-                                break;
-                            }
-                            buffer[n++] = (byte) c;
-                        }
-                        message = new String(buffer, 0, n, "Shift_JIS");
+                    BufferedReader br = new BufferedReader(new InputStreamReader(mSocket.getInputStream()));
+                    while (mSocket.isConnected() && (message = br.readLine()) != null) {
                         mTcpReceiveListener.receive(message);
-                    } while (!mSocket.isConnected());
-
-                    inputStream.close();
+                    }
                 } catch (IOException e) {
                     e.printStackTrace();
                     mTcpReceiveListener = null;
