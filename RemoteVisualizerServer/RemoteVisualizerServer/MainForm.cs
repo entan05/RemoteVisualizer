@@ -1,7 +1,12 @@
 ﻿using System;
 using System.Diagnostics;
 using System.Drawing;
+using System.Drawing.Imaging;
+using System.IO;
 using System.Net;
+using System.Net.Sockets;
+using System.Text;
+using System.Threading.Tasks;
 using System.Windows.Forms;
 
 namespace RemoteVisualizerServer
@@ -15,6 +20,8 @@ namespace RemoteVisualizerServer
 
         private System.Timers.Timer m_GettingImageTimer = null;
 
+        private TcpClient m_TcpClient = null;
+
         public MainForm()
         {
             InitializeComponent();
@@ -22,6 +29,8 @@ namespace RemoteVisualizerServer
             GetHostAddress();
 
             UpdateFormTitle();
+
+            ReceiveStart();
         }
 
         private void MainForm_FormClosing(object sender, FormClosingEventArgs e)
@@ -31,6 +40,10 @@ namespace RemoteVisualizerServer
                 m_GettingImageTimer.Stop();
                 m_GettingImageTimer.Dispose();
                 m_GettingImageTimer = null;
+            }
+            if (null != m_TcpClient)
+            {
+                ReceiveStop();
             }
             if (null != m_TargetProcess)
             {
@@ -59,6 +72,45 @@ namespace RemoteVisualizerServer
             {
                 this.Text = Const.MAIN_FORM_TITLE_BASE;
             }
+        }
+
+        private void ReceiveStart()
+        {
+            Task task = new Task(() =>
+            {
+                if (null != m_IpAddress && m_Port > 0)
+                {
+                    if (null != m_TcpClient)
+                    {
+                        ReceiveStop();
+                    }
+
+                    TcpListener tcpListener = new TcpListener(m_IpAddress, m_Port);
+                    tcpListener.Start();
+
+                    m_TcpClient = tcpListener.AcceptTcpClient();
+
+                    if (m_TcpClient.Connected)
+                    {
+                        tcpListener.Stop();
+                    }
+                }
+            });
+            task.Start();
+        }
+
+        private void ReceiveStop()
+        {
+            Task task = new Task(() =>
+            {
+                if (null != m_TcpClient)
+                {
+                    m_TcpClient.Close();
+                    m_TcpClient.Dispose();
+                    m_TcpClient = null;
+                }
+            });
+            task.Start();
         }
 
         private void UpdateLogBox(string message)
@@ -94,13 +146,13 @@ namespace RemoteVisualizerServer
                 string selectedItem = ApplicationListView.SelectedItems[0].Text;
                 UpdateLogBox("Selected : " + selectedItem);
 
-                if(null != m_GettingImageTimer)
+                if (null != m_GettingImageTimer)
                 {
                     m_GettingImageTimer.Stop();
                     m_GettingImageTimer.Dispose();
                     m_GettingImageTimer = null;
                 }
-                if(null != m_TargetProcess)
+                if (null != m_TargetProcess)
                 {
                     NativeCaller.SetWindowPos(m_TargetProcess.MainWindowHandle,
                         (IntPtr)NativeCaller.SpecialWindowHandles.HWND_NOTOPMOST, 0, 0, 0, 0,
@@ -114,7 +166,8 @@ namespace RemoteVisualizerServer
                     NativeCaller.SetWindowPosFlags.SWP_NOMOVE |
                     NativeCaller.SetWindowPosFlags.SWP_NOSIZE);
 
-                m_GettingImageTimer = new System.Timers.Timer(1000 / 30);
+                // 仮で10fps
+                m_GettingImageTimer = new System.Timers.Timer(1000 / 10);
 
                 m_GettingImageTimer.Elapsed += (s, e) =>
                 {
@@ -147,7 +200,20 @@ namespace RemoteVisualizerServer
                             graphics.CopyFromScreen(captureStartPoint, new Point(0, 0), rectangle.Size);
                             graphics.Dispose();
 
-                            if(null != PreviewBox.Image)
+                            if (null != m_TcpClient && m_TcpClient.Connected)
+                            {
+                                MemoryStream memoryStream = new MemoryStream();
+                                bitmap.Save(memoryStream, ImageFormat.Png);
+                                byte[] imageBytes = memoryStream.ToArray();
+                                memoryStream.Dispose();
+                                string ImageBase64String = Convert.ToBase64String(imageBytes);
+
+                                NetworkStream networkStream = m_TcpClient.GetStream();
+                                byte[] sendBytes = Encoding.UTF8.GetBytes(ImageBase64String);
+                                networkStream.Write(sendBytes, 0, sendBytes.Length);
+                            }
+
+                            if (null != PreviewBox.Image)
                             {
                                 PreviewBox.Image.Dispose();
                             }
