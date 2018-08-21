@@ -203,13 +203,13 @@ namespace RemoteVisualizerServer
                             if (null != m_TcpClient && m_TcpClient.Connected)
                             {
                                 MemoryStream memoryStream = new MemoryStream();
-                                bitmap.Save(memoryStream, ImageFormat.Png);
+                                bitmap.Save(memoryStream, ImageFormat.Bmp);
                                 byte[] imageBytes = memoryStream.ToArray();
                                 memoryStream.Dispose();
                                 string ImageBase64String = Convert.ToBase64String(imageBytes);
 
                                 NetworkStream networkStream = m_TcpClient.GetStream();
-                                byte[] sendBytes = Encoding.UTF8.GetBytes(ImageBase64String);
+                                byte[] sendBytes = Encoding.UTF8.GetBytes(ImageBase64String + "\n");
                                 networkStream.Write(sendBytes, 0, sendBytes.Length);
                             }
 
