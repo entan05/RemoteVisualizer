@@ -16,6 +16,21 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
     }
+    applicationVariants.all { variant ->
+        if (variant.buildType.name.equals("release")) {
+            // releaseビルドのみ、ファイル名にVesionNameとビルド時間を付与
+            variant.outputs.all {
+                def versionName = variant.versionName
+                def date = new java.text.SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date())
+                def newName = "RemoteVisualizer_Release_v${versionName}_${date}.apk"
+                outputFileName = newName
+            }
+        } else {
+            variant.outputs.all {
+                outputFileName = "RemoteVisualizer_Debug.apk"
+            }
+        }
+    }
 }
 
 dependencies {
