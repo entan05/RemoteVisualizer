@@ -23,13 +23,23 @@ public class VisualizerSurfaceView extends SurfaceView implements SurfaceHolder.
     }
 
     public void drawBitmap(Bitmap bitmap) {
+        int bWidth = bitmap.getWidth();
+        int bHeight = bitmap.getHeight();
+        double rScale;
+        if(bWidth >= bHeight) {
+            rScale = (double)mScreenWidth / bWidth;
+        } else {
+            rScale = (double)mScreenHeight / bHeight;
+        }
+        Bitmap rBitmap = Bitmap.createScaledBitmap(bitmap, (int)(bWidth * rScale), (int)(bHeight * rScale), false);
+
         Canvas canvas = mSurfaceHolder.lockCanvas();
         {
             Paint paint = new Paint();
             paint.setColor(Color.BLACK);
 
             canvas.drawColor(Color.BLACK);
-            canvas.drawBitmap(bitmap, 0, 0, paint);
+            canvas.drawBitmap(rBitmap, (mScreenWidth / 2) - (rBitmap.getWidth() / 2), 0, paint);
         }
         mSurfaceHolder.unlockCanvasAndPost(canvas);
     }
