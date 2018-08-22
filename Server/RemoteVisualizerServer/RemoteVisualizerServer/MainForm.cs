@@ -93,6 +93,23 @@ namespace RemoteVisualizerServer
                     if (m_TcpClient.Connected)
                     {
                         tcpListener.Stop();
+
+                        NetworkStream networkStream = m_TcpClient.GetStream();
+                        StreamReader streamReader = new StreamReader(networkStream, Encoding.UTF8);
+
+                        string message = string.Empty;
+                        do
+                        {
+                            message = streamReader.ReadLine();
+                            if (null == message)
+                            {
+                                break;
+                            }
+                            Invoke((Action)(() =>
+                            {
+                                UpdateLogBox(message);
+                            }));
+                        } while (m_TcpClient.Connected && !string.IsNullOrEmpty(message));
                     }
                 }
             });
@@ -166,8 +183,8 @@ namespace RemoteVisualizerServer
                     NativeCaller.SetWindowPosFlags.SWP_NOMOVE |
                     NativeCaller.SetWindowPosFlags.SWP_NOSIZE);
 
-                // 仮で10fps
-                m_GettingImageTimer = new System.Timers.Timer(1000 / 10);
+                // 仮で45fps
+                m_GettingImageTimer = new System.Timers.Timer(1000 / 45);
 
                 m_GettingImageTimer.Elapsed += (s, e) =>
                 {
