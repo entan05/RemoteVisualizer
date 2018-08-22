@@ -6,6 +6,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Base64;
 import android.util.Log;
+import android.view.View;
 
 import jp.team.e_works.remotevisualizerclient.TcpConnecter;
 import jp.team.e_works.remotevisualizerclient.view.VisualizerSurfaceView;
@@ -25,6 +26,12 @@ public class VisualizerActivity extends AppCompatActivity implements TcpConnecte
         super.onCreate(savedInstanceState);
 
         mSurfaceView = new VisualizerSurfaceView(this);
+        mSurfaceView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                mTcpConnecter.sendMessage("xxxxx");
+            }
+        });
         setContentView(mSurfaceView);
 
         mTcpConnecter = new TcpConnecter(mIpAddress, mPort);
@@ -39,7 +46,7 @@ public class VisualizerActivity extends AppCompatActivity implements TcpConnecte
     }
 
     @Override
-    public void receive(String message) {
+    public void onReceive(String message) {
         Log.d("VisualizerActivity", "received");
         byte[] dataBytes = Base64.decode(message, 0);
         Bitmap bitmap = BitmapFactory.decodeByteArray(dataBytes, 0, dataBytes.length);

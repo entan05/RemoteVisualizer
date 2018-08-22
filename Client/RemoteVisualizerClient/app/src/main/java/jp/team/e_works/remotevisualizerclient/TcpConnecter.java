@@ -8,6 +8,7 @@ import android.text.TextUtils;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.OutputStream;
 import java.net.Socket;
 
 public class TcpConnecter {
@@ -55,7 +56,7 @@ public class TcpConnecter {
                     String message;
                     BufferedReader br = new BufferedReader(new InputStreamReader(mSocket.getInputStream()));
                     while (mSocket.isConnected() && (message = br.readLine()) != null) {
-                        mTcpReceiveListener.receive(message);
+                        mTcpReceiveListener.onReceive(message);
                     }
                 } catch (IOException e) {
                     e.printStackTrace();
@@ -72,7 +73,26 @@ public class TcpConnecter {
         mReciveHandlerThread.quitSafely();
     }
 
+    public void sendMessage(final String message) {
+        mSendHandler.post(new Runnable() {
+            @Override
+            public void run() {
+                if (mSocket != null && mSocket.isConnected()) {
+                    try {
+                        OutputStream outputStream = mSocket.getOutputStream();
+
+                        byte[] data = (message + "\n").getBytes();
+                        outputStream.write(data, 0, data.length);
+                        outputStream.flush();
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                }
+            }
+        });
+    }
+
     public interface TcpReceiveListener {
-        void receive(String message);
+        void onReceive(String message);
     }
 }
