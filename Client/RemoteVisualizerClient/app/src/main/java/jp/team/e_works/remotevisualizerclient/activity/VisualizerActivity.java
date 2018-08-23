@@ -2,20 +2,23 @@ package jp.team.e_works.remotevisualizerclient.activity;
 
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.os.Handler;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Base64;
 import android.util.Log;
-import android.view.View;
 
+import jp.team.e_works.remotevisualizerclient.R;
 import jp.team.e_works.remotevisualizerclient.TcpConnecter;
-import jp.team.e_works.remotevisualizerclient.view.VisualizerSurfaceView;
+import jp.team.e_works.remotevisualizerclient.view.VisualizerView;
 
 public class VisualizerActivity extends AppCompatActivity implements TcpConnecter.TcpReceiveListener {
 
-    private VisualizerSurfaceView mSurfaceView;
+    private VisualizerView mVisualizer;
 
     private TcpConnecter mTcpConnecter = null;
+
+    private Handler mUIHandler;
 
     // TODO: 仮置き
     private String mIpAddress = "192.168.0.20";
@@ -25,14 +28,11 @@ public class VisualizerActivity extends AppCompatActivity implements TcpConnecte
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        mSurfaceView = new VisualizerSurfaceView(this);
-        mSurfaceView.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                mTcpConnecter.sendMessage("xxxxx");
-            }
-        });
-        setContentView(mSurfaceView);
+        mUIHandler = new Handler(getMainLooper());
+
+        setContentView(R.layout.activity_visualizer);
+
+        mVisualizer = findViewById(R.id.visualizer);
 
         mTcpConnecter = new TcpConnecter(mIpAddress, mPort);
         mTcpConnecter.connect(this);
@@ -49,7 +49,13 @@ public class VisualizerActivity extends AppCompatActivity implements TcpConnecte
     public void onReceive(String message) {
         Log.d("VisualizerActivity", "received");
         byte[] dataBytes = Base64.decode(message, 0);
-        Bitmap bitmap = BitmapFactory.decodeByteArray(dataBytes, 0, dataBytes.length);
-        mSurfaceView.drawBitmap(bitmap);
+        final Bitmap bitmap = BitmapFactory.decodeByteArray(dataBytes, 0, dataBytes.length);
+
+        mUIHandler.post(new Runnable() {
+            @Override
+            public void run() {
+                mVisualizer.updateDrawBitmap(bitmap);
+            }
+        });
     }
 }
