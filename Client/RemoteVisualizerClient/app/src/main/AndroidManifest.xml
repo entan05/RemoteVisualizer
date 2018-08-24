@@ -20,7 +20,8 @@
         </activity>
         <activity
             android:name=".activity.VisualizerActivity"
-            android:screenOrientation="landscape" />
+            android:screenOrientation="landscape"
+            android:theme="@style/AppTheme.FullScreen"/>
     </application>
 
 </manifest>
