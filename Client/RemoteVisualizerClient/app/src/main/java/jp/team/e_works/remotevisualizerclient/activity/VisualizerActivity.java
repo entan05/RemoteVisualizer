@@ -10,6 +10,7 @@ import android.view.View;
 
 import jp.team.e_works.remotevisualizerclient.TcpConnecter;
 import jp.team.e_works.remotevisualizerclient.fragment.ConnectServerSetupDialogFragment;
+import jp.team.e_works.remotevisualizerclient.util.SettingManager;
 import jp.team.e_works.remotevisualizerclient.view.VisualizerSurfaceView;
 
 public class VisualizerActivity extends AppCompatActivity implements TcpConnecter.TcpReceiveListener {
@@ -17,6 +18,8 @@ public class VisualizerActivity extends AppCompatActivity implements TcpConnecte
     private VisualizerSurfaceView mSurfaceView;
 
     private TcpConnecter mTcpConnecter = null;
+
+    private SettingManager mSettingManager;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -31,14 +34,20 @@ public class VisualizerActivity extends AppCompatActivity implements TcpConnecte
         });
         setContentView(mSurfaceView);
 
-        ConnectServerSetupDialogFragment dialog = ConnectServerSetupDialogFragment.createInstance(null, -1);
+        mSettingManager = SettingManager.getInstance();
+
+        ConnectServerSetupDialogFragment dialog = ConnectServerSetupDialogFragment.createInstance(
+                mSettingManager.getIpAddress(this),
+                mSettingManager.getPort(this));
         dialog.setSetupDialogListener(mCSSDListener);
         dialog.show(getSupportFragmentManager(), "ConnectServerSetupDialog");
     }
 
     @Override
     protected void onDestroy() {
-        mTcpConnecter.disconnect();
+        if (mTcpConnecter != null) {
+            mTcpConnecter.disconnect();
+        }
 
         super.onDestroy();
     }
@@ -55,6 +64,9 @@ public class VisualizerActivity extends AppCompatActivity implements TcpConnecte
             = new ConnectServerSetupDialogFragment.ConnectServerSetupDialogListener() {
         @Override
         public void onSetting(String ip, int port) {
+            mSettingManager.setIpAddress(VisualizerActivity.this, ip);
+            mSettingManager.setPort(VisualizerActivity.this, port);
+
             mTcpConnecter = new TcpConnecter(ip, port);
             mTcpConnecter.connect(VisualizerActivity.this);
         }
