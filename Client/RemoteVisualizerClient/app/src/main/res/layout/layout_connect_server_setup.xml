@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <TextView
+        android:id="@+id/cssd_ip_label"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:paddingEnd="@dimen/zero_padding"
+        android:paddingStart="@dimen/padding"
+        android:paddingTop="@dimen/padding"
+        android:text="@string/connectServerDialog_ipAddress" />
+
+    <EditText
+        android:id="@+id/cssd_ip_input"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/cssd_ip_label"
+        android:hint="@string/connectServerDialog_ipAddress_hint"
+        android:inputType="text"
+        android:paddingEnd="@dimen/zero_padding"
+        android:paddingStart="@dimen/padding"
+        android:paddingTop="@dimen/padding" />
+
+    <TextView
+        android:id="@+id/cssd_port_label"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/cssd_ip_input"
+        android:paddingEnd="@dimen/zero_padding"
+        android:paddingStart="@dimen/padding"
+        android:paddingTop="@dimen/padding"
+        android:text="@string/connectServerDialog_port" />
+
+    <EditText
+        android:id="@+id/cssd_port_input"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/cssd_port_label"
+        android:hint="@string/connectServerDialog_port_hint"
+        android:inputType="number"
+        android:paddingEnd="@dimen/zero_padding"
+        android:paddingStart="@dimen/padding"
+        android:paddingTop="@dimen/padding" />
+</RelativeLayout>
