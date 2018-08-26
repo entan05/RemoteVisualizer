@@ -9,6 +9,7 @@ import android.util.Log;
 import android.view.View;
 
 import jp.team.e_works.remotevisualizerclient.TcpConnecter;
+import jp.team.e_works.remotevisualizerclient.fragment.ConnectServerSetupDialogFragment;
 import jp.team.e_works.remotevisualizerclient.view.VisualizerSurfaceView;
 
 public class VisualizerActivity extends AppCompatActivity implements TcpConnecter.TcpReceiveListener {
@@ -16,10 +17,6 @@ public class VisualizerActivity extends AppCompatActivity implements TcpConnecte
     private VisualizerSurfaceView mSurfaceView;
 
     private TcpConnecter mTcpConnecter = null;
-
-    // TODO: 仮置き
-    private String mIpAddress = "192.168.0.20";
-    private int mPort = 8888;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -34,8 +31,9 @@ public class VisualizerActivity extends AppCompatActivity implements TcpConnecte
         });
         setContentView(mSurfaceView);
 
-        mTcpConnecter = new TcpConnecter(mIpAddress, mPort);
-        mTcpConnecter.connect(this);
+        ConnectServerSetupDialogFragment dialog = ConnectServerSetupDialogFragment.createInstance(null, -1);
+        dialog.setSetupDialogListener(mCSSDListener);
+        dialog.show(getSupportFragmentManager(), "ConnectServerSetupDialog");
     }
 
     @Override
@@ -52,4 +50,18 @@ public class VisualizerActivity extends AppCompatActivity implements TcpConnecte
         Bitmap bitmap = BitmapFactory.decodeByteArray(dataBytes, 0, dataBytes.length);
         mSurfaceView.drawBitmap(bitmap);
     }
+
+    private ConnectServerSetupDialogFragment.ConnectServerSetupDialogListener mCSSDListener
+            = new ConnectServerSetupDialogFragment.ConnectServerSetupDialogListener() {
+        @Override
+        public void onSetting(String ip, int port) {
+            mTcpConnecter = new TcpConnecter(ip, port);
+            mTcpConnecter.connect(VisualizerActivity.this);
+        }
+
+        @Override
+        public void onCancel() {
+            finish();
+        }
+    };
 }

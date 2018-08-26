@@ -1,3 +1,11 @@
 <resources>
     <string name="app_name">RemoteVisualizerClient</string>
+
+    <string name="connectServerDialog_title">Setup Connect Server</string>
+    <string name="connectServerDialog_ipAddress">IP Address</string>
+    <string name="connectServerDialog_ipAddress_hint">---.---.--.--</string>
+    <string name="connectServerDialog_port">Port</string>
+    <string name="connectServerDialog_port_hint">----</string>
+    <string name="connectServerDialog_positiveBtn">Connect</string>
+    <string name="connectServerDialog_negativeBtn">Cancel</string>
 </resources>
