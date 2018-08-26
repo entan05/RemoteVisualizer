@@ -7,6 +7,7 @@ import android.os.Bundle;
 import android.util.Base64;
 import android.util.Log;
 import android.view.View;
+import android.view.WindowManager;
 
 import jp.team.e_works.remotevisualizerclient.TcpConnecter;
 import jp.team.e_works.remotevisualizerclient.fragment.ConnectServerSetupDialogFragment;
@@ -33,6 +34,8 @@ public class VisualizerActivity extends AppCompatActivity implements TcpConnecte
             }
         });
         setContentView(mSurfaceView);
+
+        getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
 
         mSettingManager = SettingManager.getInstance();
 
