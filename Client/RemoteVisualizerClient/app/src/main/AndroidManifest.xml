@@ -12,17 +12,16 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme"
         android:resizeableActivity="false">
-        <activity android:name=".activity.TopActivity">
+        <activity
+            android:name=".activity.VisualizerActivity"
+            android:screenOrientation="landscape"
+            android:theme="@style/AppTheme.FullScreen">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity
-            android:name=".activity.VisualizerActivity"
-            android:screenOrientation="landscape"
-            android:theme="@style/AppTheme.FullScreen"/>
     </application>
 
 </manifest>
