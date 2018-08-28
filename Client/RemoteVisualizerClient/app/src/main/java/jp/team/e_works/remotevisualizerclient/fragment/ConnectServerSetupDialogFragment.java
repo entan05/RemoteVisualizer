@@ -94,6 +94,14 @@ public class ConnectServerSetupDialogFragment extends DialogFragment {
         return builder.create();
     }
 
+    @Override
+    public void onCancel(DialogInterface dialog) {
+        super.onCancel(dialog);
+        if (mListener != null) {
+            mListener.onCancel();
+        }
+    }
+
     public interface ConnectServerSetupDialogListener {
         void onSetting(String ip, int port);
 
