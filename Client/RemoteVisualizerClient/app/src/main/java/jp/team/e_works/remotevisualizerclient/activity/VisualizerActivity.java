@@ -56,14 +56,12 @@ public class VisualizerActivity extends AppCompatActivity implements TcpConnecte
     }
 
     @Override
-    public void onReceive(String message) {
-        Log.d("VisualizerActivity", "received");
-        byte[] dataBytes = Base64.decode(message, 0);
-        final Bitmap bitmap = BitmapFactory.decodeByteArray(dataBytes, 0, dataBytes.length);
-
+    public void onReceive(final String message) {
         mUIHandler.post(new Runnable() {
             @Override
             public void run() {
+                byte[] dataBytes = Base64.decode(message, 0);
+                final Bitmap bitmap = BitmapFactory.decodeByteArray(dataBytes, 0, dataBytes.length);
                 mVisualizer.updateDrawBitmap(bitmap);
             }
         });
