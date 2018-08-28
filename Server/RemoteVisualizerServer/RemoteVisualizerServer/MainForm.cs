@@ -182,6 +182,10 @@ namespace RemoteVisualizerServer
                     (IntPtr)NativeCaller.SpecialWindowHandles.HWND_TOPMOST, 0, 0, 0, 0,
                     NativeCaller.SetWindowPosFlags.SWP_NOMOVE |
                     NativeCaller.SetWindowPosFlags.SWP_NOSIZE);
+                NativeCaller.SetWindowPos(m_TargetProcess.MainWindowHandle,
+                        (IntPtr)NativeCaller.SpecialWindowHandles.HWND_NOTOPMOST, 0, 0, 0, 0,
+                        NativeCaller.SetWindowPosFlags.SWP_NOMOVE |
+                        NativeCaller.SetWindowPosFlags.SWP_NOSIZE);
 
                 // 仮で45fps
                 m_GettingImageTimer = new System.Timers.Timer(1000 / 45);
