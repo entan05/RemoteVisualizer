@@ -6,9 +6,9 @@ import android.os.Handler;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Base64;
-import android.util.Log;
 import android.view.WindowManager;
 
+import jp.team.e_works.remotevisualizerclient.Const;
 import jp.team.e_works.remotevisualizerclient.R;
 import jp.team.e_works.remotevisualizerclient.TcpConnecter;
 import jp.team.e_works.remotevisualizerclient.fragment.ConnectServerSetupDialogFragment;
@@ -34,6 +34,7 @@ public class VisualizerActivity extends AppCompatActivity implements TcpConnecte
         setContentView(R.layout.activity_visualizer);
 
         mVisualizer = findViewById(R.id.visualizer);
+        mVisualizer.setOnTouchEventListener(mTouchEventListener);
 
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
 
@@ -81,6 +82,29 @@ public class VisualizerActivity extends AppCompatActivity implements TcpConnecte
         @Override
         public void onCancel() {
             finish();
+        }
+    };
+
+    private VisualizerView.OnTouchEventListener mTouchEventListener = new VisualizerView.OnTouchEventListener() {
+        @Override
+        public void onDown(int x, int y) {
+            if(mTcpConnecter != null) {
+                mTcpConnecter.sendMessage(Const.TOUCH_DOWN_PREFIX + x + "," + y);
+            }
+        }
+
+        @Override
+        public void onMove(int x, int y) {
+            if(mTcpConnecter != null) {
+                mTcpConnecter.sendMessage(Const.TOUCH_MOVE_PREFIX + x + "," + y);
+            }
+        }
+
+        @Override
+        public void onUp(int x, int y) {
+            if(mTcpConnecter != null) {
+                mTcpConnecter.sendMessage(Const.TOUCH_UP_PREFIX + x + "," + y);
+            }
         }
     };
 }
