@@ -142,7 +142,7 @@ namespace RemoteVisualizerServer
                                 }
                                 Invoke((Action)(() =>
                                 {
-                                    UpdateLogBox(message);
+                                    perseReceiveMessage(message);
                                 }));
                             } while (m_TcpClient.Connected && !string.IsNullOrEmpty(message));
                         }
@@ -168,6 +168,7 @@ namespace RemoteVisualizerServer
                     moveMouseByTouchPosition(x, y);
                 }
                 Util.MouseLeftDown();
+                UpdateLogBox("touch down(" + x + ", " + y + ")");
             }
             // タッチイベント ムーブ
             else if ("01".Equals(messageSplit[0]))
@@ -177,6 +178,7 @@ namespace RemoteVisualizerServer
                 if (int.TryParse(messageSplit[1], out x) && int.TryParse(messageSplit[2], out y))
                 {
                     moveMouseByTouchPosition(x, y);
+                    UpdateLogBox("touch move(" + x + ", " + y + ")");
                 }
             }
             // タッチイベント アップ
@@ -189,6 +191,7 @@ namespace RemoteVisualizerServer
                     moveMouseByTouchPosition(x, y);
                 }
                 Util.MouseLeftUp();
+                UpdateLogBox("touch up(" + x + ", " + y + ")");
             }
         }
 
@@ -334,10 +337,10 @@ namespace RemoteVisualizerServer
                             memoryStream.Dispose();
                             string ImageBase64String = Convert.ToBase64String(imageBytes);
 
-                            NetworkStream networkStream = m_TcpClient.GetStream();
-                            byte[] sendBytes = Encoding.UTF8.GetBytes(ImageBase64String + "\n");
                             try
                             {
+                                NetworkStream networkStream = m_TcpClient.GetStream();
+                                byte[] sendBytes = Encoding.UTF8.GetBytes(ImageBase64String + "\n");
                                 networkStream.Write(sendBytes, 0, sendBytes.Length);
                             }
                             catch (NullReferenceException ex) { }
