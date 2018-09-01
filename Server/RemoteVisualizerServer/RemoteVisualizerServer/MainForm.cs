@@ -149,6 +149,9 @@ namespace RemoteVisualizerServer
                         catch (IOException e)
                         { }
                     }
+                    // 再接続待機
+                    ReceiveStop();
+                    ReceiveStart();
                 }
             });
             task.Start();
@@ -213,9 +216,13 @@ namespace RemoteVisualizerServer
             {
                 if (null != m_TcpClient)
                 {
-                    m_TcpClient.Close();
-                    m_TcpClient.Dispose();
-                    m_TcpClient = null;
+                    try
+                    {
+                        m_TcpClient.Close();
+                        m_TcpClient.Dispose();
+                        m_TcpClient = null;
+                    }
+                    catch (NullReferenceException e) { }
                 }
             });
             task.Start();
