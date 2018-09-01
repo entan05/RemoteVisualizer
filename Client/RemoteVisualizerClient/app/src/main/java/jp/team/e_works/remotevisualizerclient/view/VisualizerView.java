@@ -5,17 +5,25 @@ import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
+import android.graphics.Rect;
 import android.support.annotation.Nullable;
 import android.util.AttributeSet;
+import android.view.MotionEvent;
 import android.view.View;
+
+import jp.team.e_works.remotevisualizerclient.Const;
 
 public class VisualizerView extends View {
     private int mOriginBitmapWidth = -1;
     private int mOriginBitmapHeight = -1;
 
+    private Rect mDrawBitmapRect;
+
     private Paint mPaint;
 
     private Bitmap mDrawBitmap = null;
+
+    private OnTouchEventListener mTouchListener = null;
 
     public VisualizerView(Context context) {
         super(context);
@@ -39,6 +47,12 @@ public class VisualizerView extends View {
     private void initialize() {
         mPaint = new Paint();
         mPaint.setColor(Color.BLACK);
+
+        mDrawBitmapRect = new Rect();
+    }
+
+    public void setOnTouchEventListener(OnTouchEventListener listener) {
+        mTouchListener = listener;
     }
 
     @Override
@@ -47,11 +61,67 @@ public class VisualizerView extends View {
 
         canvas.drawColor(Color.BLACK);
         if (mDrawBitmap != null) {
-            canvas.drawBitmap(mDrawBitmap,
-                    (getWidth() / 2) - (mDrawBitmap.getWidth() / 2),
-                    (getHeight() / 2) - (mDrawBitmap.getHeight() / 2),
-                    mPaint);
+            int left = (getWidth() / 2) - (mDrawBitmap.getWidth() / 2);
+            int top = (getHeight() / 2) - (mDrawBitmap.getHeight() / 2);
+            mDrawBitmapRect.set(left, top, left + mDrawBitmap.getWidth(), top + mDrawBitmap.getHeight());
+            canvas.drawBitmap(mDrawBitmap, left, top, mPaint);
         }
+    }
+
+    @Override
+    public boolean performClick() {
+        super.performClick();
+        return true;
+    }
+
+    @Override
+    public boolean onTouchEvent(MotionEvent event) {
+        if (mTouchListener != null) {
+            int action = event.getAction();
+            if (action == MotionEvent.ACTION_DOWN || action == MotionEvent.ACTION_MOVE || action == MotionEvent.ACTION_UP) {
+                if (isTouchBitmap(event)) {
+                    int touchType;
+                    switch (action) {
+                        case MotionEvent.ACTION_DOWN:
+                            touchType = Const.TOUCH_TYPE_DOWN;
+                            break;
+
+                        case MotionEvent.ACTION_MOVE:
+                            touchType = Const.TOUCH_TYPE_MOVE;
+                            break;
+
+                        case MotionEvent.ACTION_UP:
+                            touchType = Const.TOUCH_TYPE_UP;
+                            break;
+
+                        default:
+                            return false;
+                    }
+                    int x = convertScreenXtoImageX((int) event.getX());
+                    int y = convertScreenYtoImageY((int) event.getY());
+                    mTouchListener.onEvent(touchType, x, y);
+                    return true;
+                }
+                return false;
+            }
+        }
+        return super.onTouchEvent(event);
+    }
+
+    private boolean isTouchBitmap(MotionEvent event) {
+        int x = (int) event.getX();
+        int y = (int) event.getY();
+        return mDrawBitmapRect.contains(x, y);
+    }
+
+    private int convertScreenXtoImageX(int screenX) {
+        double scale = ((double) (screenX - mDrawBitmapRect.left)) / mDrawBitmapRect.width();
+        return (int) (mOriginBitmapWidth * scale);
+    }
+
+    private int convertScreenYtoImageY(int screenY) {
+        double scale = ((double) (screenY - mDrawBitmapRect.top)) / mDrawBitmapRect.height();
+        return (int) (mOriginBitmapHeight * scale);
     }
 
     /**
@@ -73,9 +143,9 @@ public class VisualizerView extends View {
             rScale = (double) getHeight() / mOriginBitmapHeight;
         }
         mDrawBitmap = Bitmap.createScaledBitmap(bitmap,
-                (int) (mOriginBitmapWidth * rScale),
-                (int) (mOriginBitmapHeight * rScale),
-                false);
+            (int) (mOriginBitmapWidth * rScale),
+            (int) (mOriginBitmapHeight * rScale),
+            false);
 
         invalidate();
     }
@@ -89,5 +159,9 @@ public class VisualizerView extends View {
         mDrawBitmap = null;
 
         invalidate();
+    }
+
+    public interface OnTouchEventListener {
+        void onEvent(int touchType, int x, int y);
     }
 }

@@ -6,9 +6,9 @@ import android.os.Handler;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Base64;
-import android.util.Log;
 import android.view.WindowManager;
 
+import jp.team.e_works.remotevisualizerclient.Const;
 import jp.team.e_works.remotevisualizerclient.R;
 import jp.team.e_works.remotevisualizerclient.TcpConnecter;
 import jp.team.e_works.remotevisualizerclient.fragment.ConnectServerSetupDialogFragment;
@@ -34,14 +34,15 @@ public class VisualizerActivity extends AppCompatActivity implements TcpConnecte
         setContentView(R.layout.activity_visualizer);
 
         mVisualizer = findViewById(R.id.visualizer);
+        mVisualizer.setOnTouchEventListener(mTouchEventListener);
 
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
 
         mSettingManager = SettingManager.getInstance();
 
         ConnectServerSetupDialogFragment dialog = ConnectServerSetupDialogFragment.createInstance(
-                mSettingManager.getIpAddress(this),
-                mSettingManager.getPort(this));
+            mSettingManager.getIpAddress(this),
+            mSettingManager.getPort(this));
         dialog.setSetupDialogListener(mCSSDListener);
         dialog.show(getSupportFragmentManager(), "ConnectServerSetupDialog");
     }
@@ -68,7 +69,7 @@ public class VisualizerActivity extends AppCompatActivity implements TcpConnecte
     }
 
     private ConnectServerSetupDialogFragment.ConnectServerSetupDialogListener mCSSDListener
-            = new ConnectServerSetupDialogFragment.ConnectServerSetupDialogListener() {
+        = new ConnectServerSetupDialogFragment.ConnectServerSetupDialogListener() {
         @Override
         public void onSetting(String ip, int port) {
             mSettingManager.setIpAddress(VisualizerActivity.this, ip);
@@ -81,6 +82,36 @@ public class VisualizerActivity extends AppCompatActivity implements TcpConnecte
         @Override
         public void onCancel() {
             finish();
+        }
+    };
+
+    private VisualizerView.OnTouchEventListener mTouchEventListener = new VisualizerView.OnTouchEventListener() {
+        @Override
+        public void onEvent(int touchType, int x, int y) {
+            if (mTcpConnecter != null) {
+                StringBuilder sb = new StringBuilder();
+                switch (touchType) {
+                    case Const.TOUCH_TYPE_DOWN:
+                        sb.append(Const.TOUCH_DOWN_PREFIX);
+                        break;
+
+                    case Const.TOUCH_TYPE_MOVE:
+                        sb.append(Const.TOUCH_MOVE_PREFIX);
+                        break;
+
+                    case Const.TOUCH_TYPE_UP:
+                        sb.append(Const.TOUCH_UP_PREFIX);
+                        break;
+
+                    default:
+                        return;
+                }
+                sb.append(x);
+                sb.append(",");
+                sb.append(y);
+
+                mTcpConnecter.sendMessage(sb.toString());
+            }
         }
     };
 }
