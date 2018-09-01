@@ -26,5 +26,21 @@ namespace RemoteVisualizerServer
 
             return ipAddress;
         }
+
+        /// <summary>
+        /// マウスの左ボタンをダウンさせる
+        /// </summary>
+        public static void MouseLeftDown()
+        {
+            NativeCaller.mouse_event(MouseEventCode.MOUSE_EVENT_LEFT_DOWN, 0, 0, 0, 0);
+        }
+
+        /// <summary>
+        /// マウスの左ボタンをアップさせる
+        /// </summary>
+        public static void MouseLeftUp()
+        {
+            NativeCaller.mouse_event(MouseEventCode.MOUSE_EVENT_LEFT_UP, 0, 0, 0, 0);
+        }
     }
 }
