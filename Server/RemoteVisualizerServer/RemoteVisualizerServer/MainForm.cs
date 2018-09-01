@@ -26,6 +26,12 @@ namespace RemoteVisualizerServer
         /// 画面取得対象プロセス
         /// </summary>
         private Process m_TargetProcess = null;
+        /// <summary>
+        /// 画面取得ウィンドウの位置
+        /// </summary>
+        private int m_TargetWindowLeft = -1;
+        private int m_TargetWindowTop = -1;
+
 
         /// <summary>
         /// 画面取得タイマー
@@ -148,6 +154,53 @@ namespace RemoteVisualizerServer
             task.Start();
         }
 
+        private void perseReceiveMessage(string message)
+        {
+            string[] messageSplit = message.Split(',');
+
+            // タッチイベント ダウン
+            if ("00".Equals(messageSplit[0]))
+            {
+                int x = -1;
+                int y = -1;
+                if (int.TryParse(messageSplit[1], out x) && int.TryParse(messageSplit[2], out y))
+                {
+                    moveMouseByTouchPosition(x, y);
+                }
+                Util.MouseLeftDown();
+            }
+            // タッチイベント ムーブ
+            else if ("01".Equals(messageSplit[0]))
+            {
+                int x = -1;
+                int y = -1;
+                if (int.TryParse(messageSplit[1], out x) && int.TryParse(messageSplit[2], out y))
+                {
+                    moveMouseByTouchPosition(x, y);
+                }
+            }
+            // タッチイベント アップ
+            else if ("02".Equals(messageSplit[0]))
+            {
+                int x = -1;
+                int y = -1;
+                if (int.TryParse(messageSplit[1], out x) && int.TryParse(messageSplit[2], out y))
+                {
+                    moveMouseByTouchPosition(x, y);
+                }
+                Util.MouseLeftUp();
+            }
+        }
+
+        private void moveMouseByTouchPosition(int x, int y)
+        {
+            if (m_TargetWindowLeft < 0 || m_TargetWindowTop < 0)
+            {
+                return;
+            }
+            NativeCaller.SetCursorPos(m_TargetWindowLeft + x, m_TargetWindowTop + y);
+        }
+
         /// <summary>
         /// 切断処理
         /// </summary>
@@ -216,6 +269,8 @@ namespace RemoteVisualizerServer
                 {
                     ProcessTopMostRelease(m_TargetProcess);
                     m_TargetProcess = null;
+                    m_TargetWindowLeft = -1;
+                    m_TargetWindowTop = -1;
                 }
                 // 選択プロセスの取得
                 m_TargetProcess = ((ApplicationListItem)ApplicationListView.SelectedItems[0].Tag).process;
@@ -263,6 +318,9 @@ namespace RemoteVisualizerServer
                             screenPoint.X + rectangle.X,
                             screenPoint.Y + rectangle.Y);
 
+                        m_TargetWindowLeft = captureStartPoint.X;
+                        m_TargetWindowTop = captureStartPoint.Y;
+
                         Bitmap bitmap = new Bitmap(rectangle.Width, rectangle.Height);
                         Graphics graphics = Graphics.FromImage(bitmap);
                         graphics.CopyFromScreen(captureStartPoint, new Point(0, 0), rectangle.Size);
@@ -282,6 +340,7 @@ namespace RemoteVisualizerServer
                             {
                                 networkStream.Write(sendBytes, 0, sendBytes.Length);
                             }
+                            catch (NullReferenceException ex) { }
                             catch (IOException ex) { }
                             catch (ObjectDisposedException ex) { }
                         }

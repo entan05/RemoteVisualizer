@@ -164,5 +164,24 @@ namespace RemoteVisualizerServer
 
             // ReSharper restore InconsistentNaming
         }
+
+        /// <summary>
+        /// マウスカーソルを移動させる
+        /// </summary>
+        /// <param name="X">移動先のスクリーン座標</param>
+        /// <param name="Y">移動先のスクリーン座標</param>
+        [DllImport("user32.dll")]
+        internal static extern void SetCursorPos(int X, int Y);
+
+        /// <summary>
+        /// マウスイベントを発行する
+        /// </summary>
+        /// <param name="dwFlags"></param>
+        /// <param name="dx"></param>
+        /// <param name="dy"></param>
+        /// <param name="cButtons"></param>
+        /// <param name="dwExtraInfo"></param>
+        [DllImport("user32.dll")]
+        internal static extern void mouse_event(int dwFlags, int dx, int dy, int cButtons, int dwExtraInfo);
     }
 }
