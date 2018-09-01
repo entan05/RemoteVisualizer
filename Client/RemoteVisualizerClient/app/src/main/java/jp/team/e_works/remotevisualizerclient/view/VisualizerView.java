@@ -11,6 +11,8 @@ import android.util.AttributeSet;
 import android.view.MotionEvent;
 import android.view.View;
 
+import jp.team.e_works.remotevisualizerclient.Const;
+
 public class VisualizerView extends View {
     private int mOriginBitmapWidth = -1;
     private int mOriginBitmapHeight = -1;
@@ -75,33 +77,32 @@ public class VisualizerView extends View {
     @Override
     public boolean onTouchEvent(MotionEvent event) {
         if (mTouchListener != null) {
-            switch (event.getAction()) {
-                case MotionEvent.ACTION_DOWN:
-                    if (isTouchBitmap(event)) {
-                        int x = convertScreenXtoImageX((int) event.getX());
-                        int y = convertScreenYtoImageY((int) event.getY());
-                        mTouchListener.onDown(x, y);
-                        return true;
-                    }
-                    return false;
+            int action = event.getAction();
+            if (action == MotionEvent.ACTION_DOWN || action == MotionEvent.ACTION_MOVE || action == MotionEvent.ACTION_UP) {
+                if (isTouchBitmap(event)) {
+                    int touchType;
+                    switch (action) {
+                        case MotionEvent.ACTION_DOWN:
+                            touchType = Const.TOUCH_TYPE_DOWN;
+                            break;
 
-                case MotionEvent.ACTION_MOVE:
-                    if (isTouchBitmap(event)) {
-                        int x = convertScreenXtoImageX((int) event.getX());
-                        int y = convertScreenYtoImageY((int) event.getY());
-                        mTouchListener.onMove(x, y);
-                        return true;
-                    }
-                    return false;
+                        case MotionEvent.ACTION_MOVE:
+                            touchType = Const.TOUCH_TYPE_MOVE;
+                            break;
 
-                case MotionEvent.ACTION_UP:
-                    if (isTouchBitmap(event)) {
-                        int x = convertScreenXtoImageX((int) event.getX());
-                        int y = convertScreenYtoImageY((int) event.getY());
-                        mTouchListener.onUp(x, y);
-                        return true;
+                        case MotionEvent.ACTION_UP:
+                            touchType = Const.TOUCH_TYPE_UP;
+                            break;
+
+                        default:
+                            return false;
                     }
-                    return false;
+                    int x = convertScreenXtoImageX((int) event.getX());
+                    int y = convertScreenYtoImageY((int) event.getY());
+                    mTouchListener.onEvent(touchType, x, y);
+                    return true;
+                }
+                return false;
             }
         }
         return super.onTouchEvent(event);
@@ -161,10 +162,6 @@ public class VisualizerView extends View {
     }
 
     public interface OnTouchEventListener {
-        void onDown(int x, int y);
-
-        void onMove(int x, int y);
-
-        void onUp(int x, int y);
+        void onEvent(int touchType, int x, int y);
     }
 }

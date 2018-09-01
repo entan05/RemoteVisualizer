@@ -41,8 +41,8 @@ public class VisualizerActivity extends AppCompatActivity implements TcpConnecte
         mSettingManager = SettingManager.getInstance();
 
         ConnectServerSetupDialogFragment dialog = ConnectServerSetupDialogFragment.createInstance(
-                mSettingManager.getIpAddress(this),
-                mSettingManager.getPort(this));
+            mSettingManager.getIpAddress(this),
+            mSettingManager.getPort(this));
         dialog.setSetupDialogListener(mCSSDListener);
         dialog.show(getSupportFragmentManager(), "ConnectServerSetupDialog");
     }
@@ -69,7 +69,7 @@ public class VisualizerActivity extends AppCompatActivity implements TcpConnecte
     }
 
     private ConnectServerSetupDialogFragment.ConnectServerSetupDialogListener mCSSDListener
-            = new ConnectServerSetupDialogFragment.ConnectServerSetupDialogListener() {
+        = new ConnectServerSetupDialogFragment.ConnectServerSetupDialogListener() {
         @Override
         public void onSetting(String ip, int port) {
             mSettingManager.setIpAddress(VisualizerActivity.this, ip);
@@ -87,23 +87,30 @@ public class VisualizerActivity extends AppCompatActivity implements TcpConnecte
 
     private VisualizerView.OnTouchEventListener mTouchEventListener = new VisualizerView.OnTouchEventListener() {
         @Override
-        public void onDown(int x, int y) {
-            if(mTcpConnecter != null) {
-                mTcpConnecter.sendMessage(Const.TOUCH_DOWN_PREFIX + x + "," + y);
-            }
-        }
+        public void onEvent(int touchType, int x, int y) {
+            if (mTcpConnecter != null) {
+                StringBuilder sb = new StringBuilder();
+                switch (touchType) {
+                    case Const.TOUCH_TYPE_DOWN:
+                        sb.append(Const.TOUCH_DOWN_PREFIX);
+                        break;
 
-        @Override
-        public void onMove(int x, int y) {
-            if(mTcpConnecter != null) {
-                mTcpConnecter.sendMessage(Const.TOUCH_MOVE_PREFIX + x + "," + y);
-            }
-        }
+                    case Const.TOUCH_TYPE_MOVE:
+                        sb.append(Const.TOUCH_MOVE_PREFIX);
+                        break;
 
-        @Override
-        public void onUp(int x, int y) {
-            if(mTcpConnecter != null) {
-                mTcpConnecter.sendMessage(Const.TOUCH_UP_PREFIX + x + "," + y);
+                    case Const.TOUCH_TYPE_UP:
+                        sb.append(Const.TOUCH_UP_PREFIX);
+                        break;
+
+                    default:
+                        return;
+                }
+                sb.append(x);
+                sb.append(",");
+                sb.append(y);
+
+                mTcpConnecter.sendMessage(sb.toString());
             }
         }
     };
