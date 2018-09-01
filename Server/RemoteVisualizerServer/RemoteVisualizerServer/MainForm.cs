@@ -13,15 +13,30 @@ namespace RemoteVisualizerServer
 {
     public partial class MainForm : Form
     {
+        /// <summary>
+        /// アプリ実行マシンのIPアドレス
+        /// </summary>
         private IPAddress m_IpAddress = null;
+        /// <summary>
+        /// 使用ポート
+        /// </summary>
         private int m_Port = -1;
 
+        /// <summary>
+        /// 画面取得対象プロセス
+        /// </summary>
         private Process m_TargetProcess = null;
 
+        /// <summary>
+        /// 画面取得タイマー
+        /// </summary>
         private System.Timers.Timer m_GettingImageTimer = null;
 
         private TcpClient m_TcpClient = null;
 
+        /// <summary>
+        /// コンストラクタ
+        /// </summary>
         public MainForm()
         {
             InitializeComponent();
@@ -55,31 +70,43 @@ namespace RemoteVisualizerServer
             }
         }
 
+        /// <summary>
+        /// IPアドレス、ポートを取得する
+        /// </summary>
         private void GetHostAddress()
         {
             m_IpAddress = Util.GetIpAddress();
             m_Port = 8888;
         }
 
+        /// <summary>
+        /// MainFormのタイトルを更新する
+        /// </summary>
         private void UpdateFormTitle()
         {
             UpdateLogBox("Update MainForm Title");
             if (null != m_IpAddress)
             {
-                this.Text = Const.MAIN_FORM_TITLE_BASE + "_" + m_IpAddress + ":" + m_Port;
+                Text = Const.MAIN_FORM_TITLE_BASE + "_" + m_IpAddress + ":" + m_Port;
             }
             else
             {
-                this.Text = Const.MAIN_FORM_TITLE_BASE;
+                Text = Const.MAIN_FORM_TITLE_BASE;
             }
         }
 
+        /// <summary>
+        /// 受信処理の開始
+        /// </summary>
         private void ReceiveStart()
         {
+            // 別スレッドで実行する
             Task task = new Task(() =>
             {
+                // IPアドレス、ポートを取得していない場合は処理を行わない
                 if (null != m_IpAddress && m_Port > 0)
                 {
+                    // 既に接続済みの場合は切断する
                     if (null != m_TcpClient)
                     {
                         ReceiveStop();
@@ -98,24 +125,32 @@ namespace RemoteVisualizerServer
                         StreamReader streamReader = new StreamReader(networkStream, Encoding.UTF8);
 
                         string message = string.Empty;
-                        do
+                        try
                         {
-                            message = streamReader.ReadLine();
-                            if (null == message)
+                            do
                             {
-                                break;
-                            }
-                            Invoke((Action)(() =>
-                            {
-                                UpdateLogBox(message);
-                            }));
-                        } while (m_TcpClient.Connected && !string.IsNullOrEmpty(message));
+                                message = streamReader.ReadLine();
+                                if (null == message)
+                                {
+                                    break;
+                                }
+                                Invoke((Action)(() =>
+                                {
+                                    UpdateLogBox(message);
+                                }));
+                            } while (m_TcpClient.Connected && !string.IsNullOrEmpty(message));
+                        }
+                        catch (IOException e)
+                        { }
                     }
                 }
             });
             task.Start();
         }
 
+        /// <summary>
+        /// 切断処理
+        /// </summary>
         private void ReceiveStop()
         {
             Task task = new Task(() =>
@@ -130,6 +165,10 @@ namespace RemoteVisualizerServer
             task.Start();
         }
 
+        /// <summary>
+        /// 表示ログにメッセージを追加する
+        /// </summary>
+        /// <param name="message">追加するログメッセージ</param>
         private void UpdateLogBox(string message)
         {
             StateLogBox.AppendText(message + "\r\n");
@@ -137,14 +176,16 @@ namespace RemoteVisualizerServer
 
         private void ApplicationListUpdateBtn_Click(object sender, EventArgs e)
         {
+            // プロセスリストのクリア
             ApplicationListView.Items.Clear();
 
+            // 全プロセスを取得し、プロセスリストに追加する
             ListViewItem listViewItem;
             int listItemCount = 0;
             Process[] ps = Process.GetProcesses();
             foreach (Process p in ps)
             {
-                if (!string.IsNullOrEmpty(p.MainWindowTitle) && null != p.MainWindowHandle)
+                if (!string.IsNullOrEmpty(p.MainWindowTitle) && !Text.Equals(p.MainWindowTitle) && null != p.MainWindowHandle)
                 {
                     listViewItem = new ListViewItem(p.MainWindowTitle, listItemCount);
                     ApplicationListItem item = new ApplicationListItem(p);
@@ -160,9 +201,11 @@ namespace RemoteVisualizerServer
         {
             if (ApplicationListView.SelectedItems.Count > 0)
             {
+                // 選択されたプロセスの取得
                 string selectedItem = ApplicationListView.SelectedItems[0].Text;
                 UpdateLogBox("Selected : " + selectedItem);
 
+                // 画面取得タイマー実行中なら止める
                 if (null != m_GettingImageTimer)
                 {
                     m_GettingImageTimer.Stop();
@@ -171,83 +214,124 @@ namespace RemoteVisualizerServer
                 }
                 if (null != m_TargetProcess)
                 {
-                    NativeCaller.SetWindowPos(m_TargetProcess.MainWindowHandle,
-                        (IntPtr)NativeCaller.SpecialWindowHandles.HWND_NOTOPMOST, 0, 0, 0, 0,
-                        NativeCaller.SetWindowPosFlags.SWP_NOMOVE |
-                        NativeCaller.SetWindowPosFlags.SWP_NOSIZE);
+                    ProcessTopMostRelease(m_TargetProcess);
                     m_TargetProcess = null;
                 }
+                // 選択プロセスの取得
                 m_TargetProcess = ((ApplicationListItem)ApplicationListView.SelectedItems[0].Tag).process;
-                NativeCaller.SetWindowPos(m_TargetProcess.MainWindowHandle,
-                    (IntPtr)NativeCaller.SpecialWindowHandles.HWND_TOPMOST, 0, 0, 0, 0,
-                    NativeCaller.SetWindowPosFlags.SWP_NOMOVE |
-                    NativeCaller.SetWindowPosFlags.SWP_NOSIZE);
-                NativeCaller.SetWindowPos(m_TargetProcess.MainWindowHandle,
-                        (IntPtr)NativeCaller.SpecialWindowHandles.HWND_NOTOPMOST, 0, 0, 0, 0,
-                        NativeCaller.SetWindowPosFlags.SWP_NOMOVE |
-                        NativeCaller.SetWindowPosFlags.SWP_NOSIZE);
+                // 選択されたプロセスを最前面に変更
+                ProcessTopMost(m_TargetProcess);
+                // 最前面固定設定は解除する
+                ProcessTopMostRelease(m_TargetProcess);
 
-                // 仮で45fps
-                m_GettingImageTimer = new System.Timers.Timer(1000 / 45);
+                // 画面取得タイマーを開始する
+                StartGettingImageTimer();
+            }
+        }
 
-                m_GettingImageTimer.Elapsed += (s, e) =>
+        /// <summary>
+        /// 画面取得タイマーを開始する
+        /// </summary>
+        private void StartGettingImageTimer()
+        {
+            // 仮で45fps
+            m_GettingImageTimer = new System.Timers.Timer(1000 / 45);
+
+            m_GettingImageTimer.Elapsed += (s, e) =>
+            {
+                try
                 {
-                    try
+                    m_GettingImageTimer.Stop();
+
+                    if (null != m_TargetProcess)
                     {
-                        m_GettingImageTimer.Stop();
+                        IntPtr handle = m_TargetProcess.MainWindowHandle;
 
-                        if (null != m_TargetProcess)
+                        NativeCaller.POINT screenPoint = new NativeCaller.POINT(0, 0);
+                        NativeCaller.ClientToScreen(handle, out screenPoint);
+
+                        NativeCaller.RECT clientRect = new NativeCaller.RECT();
+                        NativeCaller.GetClientRect(handle, out clientRect);
+
+                        Rectangle rectangle = new Rectangle(
+                            clientRect.Left,
+                            clientRect.Top,
+                            clientRect.Right - clientRect.Left,
+                            clientRect.Bottom - clientRect.Top);
+
+                        Point captureStartPoint = new Point(
+                            screenPoint.X + rectangle.X,
+                            screenPoint.Y + rectangle.Y);
+
+                        Bitmap bitmap = new Bitmap(rectangle.Width, rectangle.Height);
+                        Graphics graphics = Graphics.FromImage(bitmap);
+                        graphics.CopyFromScreen(captureStartPoint, new Point(0, 0), rectangle.Size);
+                        graphics.Dispose();
+
+                        if (null != m_TcpClient && m_TcpClient.Connected)
                         {
-                            IntPtr handle = m_TargetProcess.MainWindowHandle;
+                            MemoryStream memoryStream = new MemoryStream();
+                            bitmap.Save(memoryStream, ImageFormat.Bmp);
+                            byte[] imageBytes = memoryStream.ToArray();
+                            memoryStream.Dispose();
+                            string ImageBase64String = Convert.ToBase64String(imageBytes);
 
-                            NativeCaller.POINT screenPoint = new NativeCaller.POINT(0, 0);
-                            NativeCaller.ClientToScreen(handle, out screenPoint);
-
-                            NativeCaller.RECT clientRect = new NativeCaller.RECT();
-                            NativeCaller.GetClientRect(handle, out clientRect);
-
-                            Rectangle rectangle = new Rectangle(
-                                clientRect.Left,
-                                clientRect.Top,
-                                clientRect.Right - clientRect.Left,
-                                clientRect.Bottom - clientRect.Top);
-
-                            Point captureStartPoint = new Point(
-                                screenPoint.X + rectangle.X,
-                                screenPoint.Y + rectangle.Y);
-
-                            Bitmap bitmap = new Bitmap(rectangle.Width, rectangle.Height);
-                            Graphics graphics = Graphics.FromImage(bitmap);
-                            graphics.CopyFromScreen(captureStartPoint, new Point(0, 0), rectangle.Size);
-                            graphics.Dispose();
-
-                            if (null != m_TcpClient && m_TcpClient.Connected)
+                            NetworkStream networkStream = m_TcpClient.GetStream();
+                            byte[] sendBytes = Encoding.UTF8.GetBytes(ImageBase64String + "\n");
+                            try
                             {
-                                MemoryStream memoryStream = new MemoryStream();
-                                bitmap.Save(memoryStream, ImageFormat.Bmp);
-                                byte[] imageBytes = memoryStream.ToArray();
-                                memoryStream.Dispose();
-                                string ImageBase64String = Convert.ToBase64String(imageBytes);
-
-                                NetworkStream networkStream = m_TcpClient.GetStream();
-                                byte[] sendBytes = Encoding.UTF8.GetBytes(ImageBase64String + "\n");
                                 networkStream.Write(sendBytes, 0, sendBytes.Length);
                             }
-
-                            if (null != PreviewBox.Image)
-                            {
-                                PreviewBox.Image.Dispose();
-                            }
-                            PreviewBox.Image = bitmap;
+                            catch (IOException ex) { }
+                            catch (ObjectDisposedException ex) { }
                         }
+
+                        if (null != PreviewBox.Image)
+                        {
+                            PreviewBox.Image.Dispose();
+                        }
+                        PreviewBox.Image = bitmap;
                     }
-                    finally
+                }
+                finally
+                {
+                    if (null != m_GettingImageTimer)
                     {
                         m_GettingImageTimer.Start();
                     }
-                };
+                }
+            };
 
-                m_GettingImageTimer.Start();
+            m_GettingImageTimer.Start();
+        }
+
+        /// <summary>
+        /// プロセスのウィンドウを最前面に変更する
+        /// </summary>
+        /// <param name="process">対象プロセス</param>
+        private void ProcessTopMost(Process process)
+        {
+            if (null != process)
+            {
+                NativeCaller.SetWindowPos(process.MainWindowHandle,
+                        (IntPtr)NativeCaller.SpecialWindowHandles.HWND_TOPMOST, 0, 0, 0, 0,
+                        NativeCaller.SetWindowPosFlags.SWP_NOMOVE |
+                        NativeCaller.SetWindowPosFlags.SWP_NOSIZE);
+            }
+        }
+
+        /// <summary>
+        /// プロセスの最前面固定設定を解除する
+        /// </summary>
+        /// <param name="process">対象プロセス</param>
+        private void ProcessTopMostRelease(Process process)
+        {
+            if (null != process)
+            {
+                NativeCaller.SetWindowPos(process.MainWindowHandle,
+                        (IntPtr)NativeCaller.SpecialWindowHandles.HWND_NOTOPMOST, 0, 0, 0, 0,
+                        NativeCaller.SetWindowPosFlags.SWP_NOMOVE |
+                        NativeCaller.SetWindowPosFlags.SWP_NOSIZE);
             }
         }
     }
