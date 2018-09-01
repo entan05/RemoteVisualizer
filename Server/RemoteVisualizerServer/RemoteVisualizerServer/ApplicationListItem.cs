@@ -2,6 +2,9 @@
 
 namespace RemoteVisualizerServer
 {
+    /// <summary>
+    /// アプリリストのアイテム
+    /// </summary>
     public class ApplicationListItem
     {
         public Process process { get; }

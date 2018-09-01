@@ -4,11 +4,24 @@ using System.Runtime.InteropServices;
 
 namespace RemoteVisualizerServer
 {
+    /// <summary>
+    /// ネイティブ層の関数呼び出し
+    /// </summary>
     class NativeCaller
     {
+        /// <summary>
+        /// 引数で与えたハンドルの画面上の位置を取得する
+        /// </summary>
+        /// <param name="hwnd">画面上の位置を取得する対象のハンドル</param>
+        /// <param name="lpPoint">画面上の位置を格納する変数</param>
         [DllImport("user32.dll")]
         internal static extern bool ClientToScreen(IntPtr hwnd, out POINT lpPoint);
 
+        /// <summary>
+        /// 引数で与えたハンドルのサイズを取得する
+        /// </summary>
+        /// <param name="hWnd">対象のハンドル</param>
+        /// <param name="lpRect">サイズを格納する変数</param>
         [DllImport("User32.dll")]
         internal static extern bool GetClientRect(IntPtr hWnd, out RECT lpRect);
 
