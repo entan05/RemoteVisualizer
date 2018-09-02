@@ -183,5 +183,8 @@ namespace RemoteVisualizerServer
         /// <param name="dwExtraInfo"></param>
         [DllImport("user32.dll")]
         internal static extern void mouse_event(int dwFlags, int dx, int dy, int cButtons, int dwExtraInfo);
+
+        [DllImport("user32.dll")]
+        internal static extern uint keybd_event(byte bVk, byte bScan, uint dwFlags, UIntPtr dwExtraInfo);
     }
 }

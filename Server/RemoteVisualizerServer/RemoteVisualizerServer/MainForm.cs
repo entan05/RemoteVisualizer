@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Drawing;
 using System.Drawing.Imaging;
@@ -40,6 +41,8 @@ namespace RemoteVisualizerServer
 
         private TcpClient m_TcpClient = null;
 
+        private List<byte> m_PressingKeys;
+
         /// <summary>
         /// コンストラクタ
         /// </summary>
@@ -50,6 +53,8 @@ namespace RemoteVisualizerServer
             GetHostAddress();
 
             UpdateFormTitle();
+
+            m_PressingKeys = new List<byte>(10);
 
             ReceiveStart();
         }
@@ -66,6 +71,7 @@ namespace RemoteVisualizerServer
             {
                 ReceiveStop();
             }
+            SendAllKeyUp();
             if (null != m_TargetProcess)
             {
                 NativeCaller.SetWindowPos(m_TargetProcess.MainWindowHandle,
@@ -196,6 +202,23 @@ namespace RemoteVisualizerServer
                 Util.MouseLeftUp();
                 UpdateLogBox("touch up(" + x + ", " + y + ")");
             }
+            // キーイベント ダウン
+            else if ("10".Equals(messageSplit[0]))
+            {
+                int keyCode;
+                if(int.TryParse(messageSplit[1], out keyCode)) {
+                    SendKeyDown((byte)keyCode);
+                }
+            }
+            // キーイベント アップ
+            else if ("11".Equals(messageSplit[0]))
+            {
+                int keyCode;
+                if (int.TryParse(messageSplit[1], out keyCode))
+                {
+                    SendKeyUp((byte)keyCode);
+                }
+            }
         }
 
         private void moveMouseByTouchPosition(int x, int y)
@@ -205,6 +228,34 @@ namespace RemoteVisualizerServer
                 return;
             }
             NativeCaller.SetCursorPos(m_TargetWindowLeft + x, m_TargetWindowTop + y);
+        }
+
+        private void SendKeyDown(byte keyCode)
+        {
+            if(!m_PressingKeys.Contains(keyCode))
+            {
+                NativeCaller.keybd_event(keyCode, 0, 0, (UIntPtr)0);
+                m_PressingKeys.Add(keyCode);
+            }
+        }
+
+        private void SendKeyUp(byte keyCode)
+        {
+            int index = m_PressingKeys.IndexOf(keyCode);
+            if(index >= 0)
+            {
+                NativeCaller.keybd_event(keyCode, 0, 2, (UIntPtr)0);
+                m_PressingKeys.RemoveAt(index);
+            }
+        }
+
+        private void SendAllKeyUp()
+        {
+            foreach(byte keyCode in m_PressingKeys)
+            {
+                NativeCaller.keybd_event(keyCode, 0, 2, (UIntPtr)0);
+            }
+            m_PressingKeys.Clear();
         }
 
         /// <summary>
@@ -224,6 +275,7 @@ namespace RemoteVisualizerServer
                     }
                     catch (NullReferenceException e) { }
                 }
+                SendAllKeyUp();
             });
             task.Start();
         }
