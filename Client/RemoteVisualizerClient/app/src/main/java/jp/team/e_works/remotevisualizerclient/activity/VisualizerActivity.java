@@ -6,7 +6,6 @@ import android.os.Handler;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Base64;
-import android.util.Log;
 import android.view.KeyEvent;
 import android.view.WindowManager;
 
@@ -73,7 +72,6 @@ public class VisualizerActivity extends AppCompatActivity implements TcpConnecte
 
     @Override
     public boolean dispatchKeyEvent(KeyEvent event) {
-        Log.d("VisualizerActivity", "dispatchKeyEvent() in...");
         KeyCode keyCode = KeyCode.getKeyCodeByAndroidKeyCode(event.getKeyCode());
         if(keyCode != KeyCode.UNKNOWN) {
             if(mTcpConnecter != null) {
