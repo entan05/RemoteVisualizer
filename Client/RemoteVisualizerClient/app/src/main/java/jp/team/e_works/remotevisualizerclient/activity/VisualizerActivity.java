@@ -6,12 +6,15 @@ import android.os.Handler;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Base64;
+import android.util.Log;
+import android.view.KeyEvent;
 import android.view.WindowManager;
 
 import jp.team.e_works.remotevisualizerclient.Const;
 import jp.team.e_works.remotevisualizerclient.R;
 import jp.team.e_works.remotevisualizerclient.TcpConnecter;
 import jp.team.e_works.remotevisualizerclient.fragment.ConnectServerSetupDialogFragment;
+import jp.team.e_works.remotevisualizerclient.util.KeyCode;
 import jp.team.e_works.remotevisualizerclient.util.SettingManager;
 import jp.team.e_works.remotevisualizerclient.view.VisualizerView;
 
@@ -66,6 +69,25 @@ public class VisualizerActivity extends AppCompatActivity implements TcpConnecte
                 mVisualizer.updateDrawBitmap(bitmap);
             }
         });
+    }
+
+    @Override
+    public boolean dispatchKeyEvent(KeyEvent event) {
+        Log.d("VisualizerActivity", "dispatchKeyEvent() in...");
+        KeyCode keyCode = KeyCode.getKeyCodeByAndroidKeyCode(event.getKeyCode());
+        if(keyCode != KeyCode.UNKNOWN) {
+            if(mTcpConnecter != null) {
+                if(event.getAction() == KeyEvent.ACTION_DOWN) {
+                    mTcpConnecter.sendMessage(Const.KEY_DOWN_PREFIX + keyCode.getWindowsKeyCode());
+                    return true;
+                } else if(event.getAction() == KeyEvent.ACTION_UP) {
+                    mTcpConnecter.sendMessage(Const.KEY_UP_PREFIX + keyCode.getWindowsKeyCode());
+                    return true;
+                }
+            }
+        }
+
+        return super.dispatchKeyEvent(event);
     }
 
     private ConnectServerSetupDialogFragment.ConnectServerSetupDialogListener mCSSDListener
