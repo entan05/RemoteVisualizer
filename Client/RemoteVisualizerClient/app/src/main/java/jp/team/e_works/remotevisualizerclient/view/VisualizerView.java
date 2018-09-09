@@ -145,7 +145,7 @@ public class VisualizerView extends View {
         mDrawBitmap = Bitmap.createScaledBitmap(bitmap,
             (int) (mOriginBitmapWidth * rScale),
             (int) (mOriginBitmapHeight * rScale),
-            false);
+            true);
 
         invalidate();
     }
