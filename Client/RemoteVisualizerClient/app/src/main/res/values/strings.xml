@@ -8,4 +8,7 @@
     <string name="connectServerDialog_port_hint">----</string>
     <string name="connectServerDialog_positiveBtn">Connect</string>
     <string name="connectServerDialog_negativeBtn">Cancel</string>
+
+    <string name="visualizerActivity_rightClick_btn">Right</string>
+    <string name="visualizerActivity_enterClick_btn">Enter</string>
 </resources>

@@ -7,6 +7,7 @@ using System.IO;
 using System.Net;
 using System.Net.Sockets;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 
@@ -32,6 +33,8 @@ namespace RemoteVisualizerServer
         /// </summary>
         private int m_TargetWindowLeft = -1;
         private int m_TargetWindowTop = -1;
+        private int m_TargetWindowWidth = -1;
+        private int m_TargetWindowHeight = -1;
 
         /// <summary>
         /// 画面取得タイマー
@@ -203,6 +206,15 @@ namespace RemoteVisualizerServer
                 Util.MouseLeftUp();
                 UpdateLogBox("touch up(" + x + ", " + y + ")");
             }
+            // 右クリックイベント
+            else if ("03".Equals(messageSplit[0]))
+            {
+                if (m_TargetWindowWidth >= 0 && m_TargetWindowHeight >= 0)
+                {
+                    moveMouseByTouchPosition(m_TargetWindowWidth / 2, m_TargetWindowHeight / 2);
+                    Util.MouseRightClick();
+                }
+            }
             // キーイベント ダウン
             else if ("10".Equals(messageSplit[0]))
             {
@@ -218,6 +230,17 @@ namespace RemoteVisualizerServer
                 int keyCode;
                 if (int.TryParse(messageSplit[1], out keyCode))
                 {
+                    SendKeyUp((byte)keyCode);
+                }
+            }
+            // キーイベント
+            else if ("12".Equals(messageSplit[0]))
+            {
+                int keyCode;
+                if (int.TryParse(messageSplit[1], out keyCode))
+                {
+                    SendKeyDown((byte)keyCode);
+                    Thread.Sleep(50);
                     SendKeyUp((byte)keyCode);
                 }
             }
@@ -335,6 +358,8 @@ namespace RemoteVisualizerServer
                     m_TargetProcess = null;
                     m_TargetWindowLeft = -1;
                     m_TargetWindowTop = -1;
+                    m_TargetWindowWidth = -1;
+                    m_TargetWindowHeight = -1;
                 }
                 // 選択プロセスの取得
                 m_TargetProcess = ((ApplicationListItem)ApplicationListView.SelectedItems[0].Tag).process;
@@ -384,6 +409,8 @@ namespace RemoteVisualizerServer
 
                         m_TargetWindowLeft = captureStartPoint.X;
                         m_TargetWindowTop = captureStartPoint.Y;
+                        m_TargetWindowWidth = rectangle.Width;
+                        m_TargetWindowHeight = rectangle.Height;
 
                         Bitmap bitmap = new Bitmap(rectangle.Width, rectangle.Height);
                         Graphics graphics = Graphics.FromImage(bitmap);
