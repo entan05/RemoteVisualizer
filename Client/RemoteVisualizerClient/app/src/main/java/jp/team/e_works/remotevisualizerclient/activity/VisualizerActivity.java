@@ -1,5 +1,6 @@
 package jp.team.e_works.remotevisualizerclient.activity;
 
+import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.Handler;
@@ -8,8 +9,9 @@ import android.os.Bundle;
 import android.util.Base64;
 import android.view.KeyEvent;
 import android.view.View;
+import android.view.ViewGroup;
 import android.view.WindowManager;
-import android.widget.Button;
+import android.widget.LinearLayout;
 
 import jp.team.e_works.remotevisualizerclient.Const;
 import jp.team.e_works.remotevisualizerclient.R;
@@ -18,6 +20,7 @@ import jp.team.e_works.remotevisualizerclient.fragment.ConnectServerSetupDialogF
 import jp.team.e_works.remotevisualizerclient.util.KeyCode;
 import jp.team.e_works.remotevisualizerclient.util.SettingManager;
 import jp.team.e_works.remotevisualizerclient.util.Util;
+import jp.team.e_works.remotevisualizerclient.view.ControlButton;
 import jp.team.e_works.remotevisualizerclient.view.VisualizerView;
 
 public class VisualizerActivity extends AppCompatActivity implements TcpConnecter.TcpReceiveListener {
@@ -36,13 +39,39 @@ public class VisualizerActivity extends AppCompatActivity implements TcpConnecte
 
         mUIHandler = new Handler(getMainLooper());
 
+        Resources resources = getResources();
         if (Util.isTablet(this)) {
             setContentView(R.layout.activity_visualizer_tablet);
+
+            LinearLayout buttonPanel = findViewById(R.id.buttonPanel);
+            int buttonPanelHeight = buttonPanel.getHeight();
+            int resourceId = resources.getIdentifier("navigation_bar_height", "dimen", "android");
+            if (resourceId > 0) {
+                int navigationBarHeight =resources.getDimensionPixelSize(resourceId);
+                if (buttonPanelHeight != navigationBarHeight) {
+                    ViewGroup.LayoutParams layoutParams = buttonPanel.getLayoutParams();
+                    layoutParams.height = navigationBarHeight;
+                    buttonPanel.setLayoutParams(layoutParams);
+                }
+            }
         } else {
             setContentView(R.layout.activity_visualizer_phone);
+
+            LinearLayout buttonPanel = findViewById(R.id.buttonPanel);
+            int buttonPanelWidth = buttonPanel.getWidth();
+            int resourceId = resources.getIdentifier("navigation_bar_width", "dimen", "android");
+            if (resourceId > 0) {
+                int navigationBarWidth =resources.getDimensionPixelSize(resourceId);
+                if (buttonPanelWidth != navigationBarWidth) {
+                    ViewGroup.LayoutParams layoutParams = buttonPanel.getLayoutParams();
+                    layoutParams.width = navigationBarWidth;
+                    buttonPanel.setLayoutParams(layoutParams);
+                }
+            }
         }
 
-        Button enterBtn = findViewById(R.id.enter_btn);
+        ControlButton enterBtn = findViewById(R.id.enter_btn);
+        enterBtn.setImage(R.drawable.enter);
         enterBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -52,7 +81,8 @@ public class VisualizerActivity extends AppCompatActivity implements TcpConnecte
             }
         });
 
-        Button mouseRightBtn = findViewById(R.id.right_btn);
+        ControlButton mouseRightBtn = findViewById(R.id.right_btn);
+        mouseRightBtn.setImage(R.drawable.mouse_right_click);
         mouseRightBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {

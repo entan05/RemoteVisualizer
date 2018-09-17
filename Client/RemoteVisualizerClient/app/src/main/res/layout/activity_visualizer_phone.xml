@@ -5,27 +5,23 @@
 
     <LinearLayout
         android:id="@+id/buttonPanel"
-        android:layout_width="48dp"
+        android:layout_width="42dp"
         android:layout_height="match_parent"
         android:layout_alignParentEnd="true"
         android:background="@color/black"
         android:orientation="vertical">
 
-        <Button
+        <jp.team.e_works.remotevisualizerclient.view.ControlButton
             android:id="@+id/right_btn"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:layout_weight="1"
-            android:text="@string/visualizerActivity_rightClick_btn"
-            android:textAllCaps="false"/>
+            android:layout_weight="1"/>
 
-        <Button
+        <jp.team.e_works.remotevisualizerclient.view.ControlButton
             android:id="@+id/enter_btn"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:layout_weight="1"
-            android:text="@string/visualizerActivity_enterClick_btn"
-            android:textAllCaps="false"/>
+            android:layout_weight="1"/>
     </LinearLayout>
     
     <jp.team.e_works.remotevisualizerclient.view.VisualizerView
