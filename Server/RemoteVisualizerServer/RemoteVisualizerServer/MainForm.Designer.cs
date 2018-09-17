@@ -34,8 +34,10 @@
             this.StateLogBox = new System.Windows.Forms.TextBox();
             this.FrameRateSlide = new System.Windows.Forms.TrackBar();
             this.PreviewBox = new System.Windows.Forms.PictureBox();
+            this.ImageQualitySlide = new System.Windows.Forms.TrackBar();
             ((System.ComponentModel.ISupportInitialize)(this.FrameRateSlide)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.PreviewBox)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.ImageQualitySlide)).BeginInit();
             this.SuspendLayout();
             // 
             // ApplicationListView
@@ -98,11 +100,24 @@
             this.PreviewBox.TabIndex = 5;
             this.PreviewBox.TabStop = false;
             // 
+            // ImageQualitySlide
+            // 
+            this.ImageQualitySlide.Location = new System.Drawing.Point(177, 278);
+            this.ImageQualitySlide.Maximum = 100;
+            this.ImageQualitySlide.Minimum = 1;
+            this.ImageQualitySlide.Name = "ImageQualitySlide";
+            this.ImageQualitySlide.Size = new System.Drawing.Size(213, 45);
+            this.ImageQualitySlide.SmallChange = 5;
+            this.ImageQualitySlide.TabIndex = 6;
+            this.ImageQualitySlide.Value = 20;
+            this.ImageQualitySlide.ValueChanged += new System.EventHandler(this.ImageQualitySlide_ValueChanged);
+            // 
             // MainForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 12F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(800, 450);
+            this.Controls.Add(this.ImageQualitySlide);
             this.Controls.Add(this.PreviewBox);
             this.Controls.Add(this.FrameRateSlide);
             this.Controls.Add(this.StateLogBox);
@@ -115,6 +130,7 @@
             this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.MainForm_FormClosing);
             ((System.ComponentModel.ISupportInitialize)(this.FrameRateSlide)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.PreviewBox)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.ImageQualitySlide)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -128,6 +144,7 @@
         private System.Windows.Forms.TextBox StateLogBox;
         private System.Windows.Forms.TrackBar FrameRateSlide;
         private System.Windows.Forms.PictureBox PreviewBox;
+        private System.Windows.Forms.TrackBar ImageQualitySlide;
     }
 }
 
