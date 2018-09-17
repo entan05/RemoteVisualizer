@@ -33,11 +33,12 @@ namespace RemoteVisualizerServer
         private int m_TargetWindowLeft = -1;
         private int m_TargetWindowTop = -1;
 
-
         /// <summary>
         /// 画面取得タイマー
         /// </summary>
         private System.Timers.Timer m_GettingImageTimer = null;
+
+        private long m_ImageQuality = 20L;
 
         private TcpClient m_TcpClient = null;
 
@@ -206,7 +207,8 @@ namespace RemoteVisualizerServer
             else if ("10".Equals(messageSplit[0]))
             {
                 int keyCode;
-                if(int.TryParse(messageSplit[1], out keyCode)) {
+                if (int.TryParse(messageSplit[1], out keyCode))
+                {
                     SendKeyDown((byte)keyCode);
                 }
             }
@@ -232,7 +234,7 @@ namespace RemoteVisualizerServer
 
         private void SendKeyDown(byte keyCode)
         {
-            if(!m_PressingKeys.Contains(keyCode))
+            if (!m_PressingKeys.Contains(keyCode))
             {
                 NativeCaller.keybd_event(keyCode, 0, 0, (UIntPtr)0);
                 m_PressingKeys.Add(keyCode);
@@ -242,7 +244,7 @@ namespace RemoteVisualizerServer
         private void SendKeyUp(byte keyCode)
         {
             int index = m_PressingKeys.IndexOf(keyCode);
-            if(index >= 0)
+            if (index >= 0)
             {
                 NativeCaller.keybd_event(keyCode, 0, 2, (UIntPtr)0);
                 m_PressingKeys.RemoveAt(index);
@@ -251,7 +253,7 @@ namespace RemoteVisualizerServer
 
         private void SendAllKeyUp()
         {
-            foreach(byte keyCode in m_PressingKeys)
+            foreach (byte keyCode in m_PressingKeys)
             {
                 NativeCaller.keybd_event(keyCode, 0, 2, (UIntPtr)0);
             }
@@ -391,7 +393,10 @@ namespace RemoteVisualizerServer
                         if (null != m_TcpClient && m_TcpClient.Connected)
                         {
                             MemoryStream memoryStream = new MemoryStream();
-                            bitmap.Save(memoryStream, ImageFormat.Bmp);
+                            EncoderParameters encoderParameters = new EncoderParameters(1);
+                            EncoderParameter parameter = new EncoderParameter(System.Drawing.Imaging.Encoder.Quality, m_ImageQuality);
+                            encoderParameters.Param[0] = parameter;
+                            bitmap.Save(memoryStream, Util.GetEncoderInfo("image/jpeg"), encoderParameters);
                             byte[] imageBytes = memoryStream.ToArray();
                             memoryStream.Dispose();
                             string ImageBase64String = Convert.ToBase64String(imageBytes);
@@ -400,7 +405,7 @@ namespace RemoteVisualizerServer
                             {
                                 NetworkStream networkStream = m_TcpClient.GetStream();
                                 byte[] sendBytes = Encoding.UTF8.GetBytes(ImageBase64String + "\n");
-                                networkStream.Write(sendBytes, 0, sendBytes.Length);
+                                networkStream.BeginWrite(sendBytes, 0, sendBytes.Length, WriteResultCallback, networkStream);
                             }
                             catch (NullReferenceException ex) { }
                             catch (IOException ex) { }
@@ -424,6 +429,23 @@ namespace RemoteVisualizerServer
             };
 
             m_GettingImageTimer.Start();
+        }
+
+        private void WriteResultCallback(IAsyncResult asyncResult)
+        {
+            NetworkStream networkStream = (NetworkStream)asyncResult.AsyncState;
+            try
+            {
+                networkStream.EndWrite(asyncResult);
+            }
+            catch (IOException e)
+            {
+
+            }
+            catch (ObjectDisposedException e)
+            {
+
+            }
         }
 
         /// <summary>
@@ -454,6 +476,12 @@ namespace RemoteVisualizerServer
                         NativeCaller.SetWindowPosFlags.SWP_NOMOVE |
                         NativeCaller.SetWindowPosFlags.SWP_NOSIZE);
             }
+        }
+
+        private void ImageQualitySlide_ValueChanged(object sender, EventArgs e)
+        {
+            m_ImageQuality = ImageQualitySlide.Value;
+            UpdateLogBox("ImageQuality : " + m_ImageQuality);
         }
     }
 }

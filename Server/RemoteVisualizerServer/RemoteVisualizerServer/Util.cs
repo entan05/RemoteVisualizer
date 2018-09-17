@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Drawing.Imaging;
 using System.Net;
 
 namespace RemoteVisualizerServer
@@ -25,6 +26,26 @@ namespace RemoteVisualizerServer
             }
 
             return ipAddress;
+        }
+
+        /// <summary>
+        /// MimeTypeで指定されたImageCodecInfoを探して返す
+        /// </summary>
+        /// <param name="mineType">MimeType</param>
+        /// <returns>ImageCodecInfo</returns>
+        public static ImageCodecInfo GetEncoderInfo(string mineType)
+        {
+            //GDI+ に組み込まれたイメージ エンコーダに関する情報をすべて取得
+            ImageCodecInfo[] encs = ImageCodecInfo.GetImageEncoders();
+            //指定されたMimeTypeを探して見つかれば返す
+            foreach (ImageCodecInfo enc in encs)
+            {
+                if (enc.MimeType == mineType)
+                {
+                    return enc;
+                }
+            }
+            return null;
         }
 
         /// <summary>
