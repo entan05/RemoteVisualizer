@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Drawing.Imaging;
 using System.Net;
+using System.Threading;
 
 namespace RemoteVisualizerServer
 {
@@ -62,6 +63,16 @@ namespace RemoteVisualizerServer
         public static void MouseLeftUp()
         {
             NativeCaller.mouse_event(MouseEventCode.MOUSE_EVENT_LEFT_UP, 0, 0, 0, 0);
+        }
+
+        /// <summary>
+        /// マウスの右ボタンをクリックさせる
+        /// </summary>
+        public static void MouseRightClick()
+        {
+            NativeCaller.mouse_event(MouseEventCode.MOUSE_EVENT_RIGHT_DOWN, 0, 0, 0, 0);
+            Thread.Sleep(50);
+            NativeCaller.mouse_event(MouseEventCode.MOUSE_EVENT_RIGHT_UP, 0, 0, 0, 0);
         }
     }
 }

@@ -18,5 +18,14 @@
         /// マウス左ボタン アップ
         /// </summary>
         public static readonly int MOUSE_EVENT_LEFT_UP = 0x004;
+
+        /// <summary>
+        /// 右ボタン ダウン
+        /// </summary>
+        public static readonly int MOUSE_EVENT_RIGHT_DOWN = 0x008;
+        /// <summary>
+        /// 右ボタン アップ
+        /// </summary>
+        public static readonly int MOUSE_EVENT_RIGHT_UP = 0x010;
     }
 }

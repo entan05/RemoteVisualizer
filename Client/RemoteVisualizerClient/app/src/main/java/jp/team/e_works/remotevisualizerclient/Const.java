@@ -9,6 +9,9 @@ public class Const {
     public static final String TOUCH_MOVE_PREFIX = "01,";
     public static final String TOUCH_UP_PREFIX = "02,";
 
+    public static final String RIGHT_CLICK_PREFIX = "03";
+
     public static final String KEY_DOWN_PREFIX = "10,";
     public static final String KEY_UP_PREFIX = "11,";
+    public static final String KEY_EVENT_PREFIX = "12,";
 }
